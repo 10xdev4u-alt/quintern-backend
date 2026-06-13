@@ -1,0 +1,15 @@
+{
+  "name": "quintern-backend",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "cd backend && cross-env NODE_ENV=production node src/app.js",
+    "build": "cd backend && npm ci --omit=dev"
+  },
+  "dependencies": {
+    "cross-env": "^10.1.0"
+  }
+}
