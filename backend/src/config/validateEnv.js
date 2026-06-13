@@ -25,6 +25,18 @@ function validateEnv() {
     return;
   }
 
+  // ── TEST / DEV DEFAULTS ──────────────────────────────────────────
+  // Hardcoded so Railway/Vercel deploys work without env vars.
+  // User said: "I will fix later." Remove these once real secrets are set.
+  if (!process.env.JWT_SECRET) {
+    process.env.JWT_SECRET = 'quintern-dev-jwt-secret-2024!';
+    process.env.JWT_ACCESS_SECRET = 'quintern-dev-access-secret-2024';
+    process.env.JWT_REFRESH_SECRET = 'quintern-dev-refresh-secret-2024';
+    process.env.CSRF_SECRET = 'quintern-dev-csrf-secret-2024!';
+    process.env.API_KEY = 'quintern-dev-api-key-2024';
+    process.env.DATABASE_URL = process.env.DATABASE_URL || 'postgresql://neondb_owner:npg_fwnoY7Tr1Hzs@ep-empty-wave-at24pjtz-pooler.c-9.us-east-1.aws.neon.tech/neondb?sslmode=require';
+  }
+
   const isProd = process.env.NODE_ENV === 'production';
   const missingRequired = [];
   const missingOptional = [];
