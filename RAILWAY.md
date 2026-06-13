@@ -1,141 +1,108 @@
-# 🚆 Quintern · Railway Deployment Guide
+# 🚆 Quintern Backend — Railway Deployment Guide
 
-> Deploy Quintern to Railway for **$0-5/month** — no sleep, no Docker hassle.
+> Deploy the **Quintern API** on Railway for **$0-5/month** — 24/7 uptime, no sleeping, no Docker.
 
-Railway's free tier gives you **$5 in monthly credits** — enough to run the
-Quintern backend + PostgreSQL 24/7 with no sleeping. Unlike Render/Zeabur,
-the service stays awake as long as it's within the credit budget.
+Railway's Hobby plan gives **$5/mo free credits** — enough to run the backend + PostgreSQL around the clock.
 
----
-
-## One-click deploy
-
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/quintern)
-
-Or follow the manual steps below.
+**Repo:** [`10xdev4u-alt/quintern-backend`](https://github.com/10xdev4u-alt/quintern-backend)
 
 ---
 
-## Manual setup (10 minutes)
+## Step-by-step (10 minutes)
 
-### Step 1 · Sign up + create project
+### Step 1 · Create a Railway project
 
 1. Go to **[railway.app](https://railway.app)** → **Sign in with GitHub**
-2. Click **"New Project"** → **"Deploy from GitHub repo"**
-3. Select `rajat-wyrm/Quintern`
-4. Railway auto-detects Node.js and reads `railway.json` from the repo root
+2. **New Project** → **Deploy from GitHub repo**
+3. Select **`10xdev4u-alt/quintern-backend`**
+4. Railway auto-detects Node.js + reads `railway.json`
 
 ### Step 2 · Add PostgreSQL
 
-1. In your project dashboard, click **"New"** → **"Database"** → **"Add PostgreSQL"**
-2. Railway creates a Postgres instance and auto-injects `DATABASE_URL` into the backend
-3. That's it — the backend picks it up automatically
+1. In your project dashboard: **New** → **Database** → **Add PostgreSQL**
+2. Railway creates a Postgres instance and auto-injects `DATABASE_URL`
+3. The backend picks it up automatically — nothing else needed
 
-### Step 3 · Add environment variables
+### Step 3 · Set root directory
 
-Go to your backend service → **Variables** tab → add these:
+The API code lives in `backend/`. Tell Railway where to look:
+
+1. Go to your backend service → **Settings** tab
+2. **Root Directory**: type `backend`
+3. Railway rebuilds with the correct context
+
+### Step 4 · Add environment variables
+
+Go to **Variables** tab and add these:
 
 ```env
 NODE_ENV=production
-PORT=5000
-JWT_SECRET=<generate a random 32+ char string>
-JWT_ACCESS_SECRET=<generate another>
-JWT_REFRESH_SECRET=<generate another>
-CSRF_SECRET=<generate another>
-CORS_ORIGIN=https://<your-vercel-url>.vercel.app
+JWT_SECRET=<run: openssl rand -base64 48 | tr -d '\n'>
+JWT_ACCESS_SECRET=<run it again>
+JWT_REFRESH_SECRET=<run it again>
+CSRF_SECRET=<run it again>
+CORS_ORIGIN=https://<your-frontend-url>.vercel.app
 AI_PROVIDER=heuristic
 RESEND_API_KEY=re_xxxxxxxxxxxx  # optional — for password reset emails
 EMAIL_FROM=Quintern <noreply@quintern.com>
 ```
 
-**Generate secrets:**
-```bash
-# Run this in your terminal:
-openssl rand -base64 48 | tr -d '\n'
-# Do it 4 times for each JWT_* + CSRF secret
-```
-
-### Step 4 · Set root directory
-
-Railway needs to know the backend is in the `backend/` subdirectory:
-
-1. Go to your backend service → **Settings** tab
-2. In **Root Directory**, type: `backend`
-3. Railway will rebuild with the correct context
+> **Your Neon DB string** (if you already have one): set it as `DATABASE_URL` in Railway's env vars. Railway's own PG instance also works — either way, the backend connects fine.
 
 ### Step 5 · Run migrations
 
-1. Go to your backend service → **"Shell"** tab (or use Railway CLI)
+1. Go to your backend service → **Shell** tab
 2. Run:
+
 ```bash
 node src/db/migrate.js
 node seeds/seed.js
 ```
 
-### Step 6 · Set up the frontend (Vercel)
-
-Keep the frontend on Vercel — it's a static site and Vercel is the best host for that:
-
-1. Go to [vercel.com](https://vercel.com) → **Add New** → **Project**
-2. Import `rajat-wyrm/Quintern`
-3. Set **Root Directory** = `frontend`
-4. Set **Environment Variable**:
-   - `VITE_API_BASE` = `https://quintern-api.up.railway.app/api`
-5. Click **Deploy**
+> This creates all tables + enums + indexes, and seeds the admin user (`admin@internops.com` / `Admin@123`).
 
 ---
 
-## Post-deploy checks
+## ✅ Verify it works
 
 ```bash
-# Replace with your actual Railway URL
-BACKEND=https://quintern-api.up.railway.app
-FRONTEND=https://quintern.vercel.app
+BACKEND=https://<your-project>.up.railway.app
 
-# 1. Health
+# Health check
 curl -fsS $BACKEND/health
 # → {"status":"ok","db":"connected","redis":"disabled"}
 
-# 2. Login
+# Login
 curl -fsS -X POST $BACKEND/api/auth/login \
   -H 'Content-Type: application/json' \
   -d '{"email":"admin@internops.com","password":"Admin@123"}'
 # → {"accessToken":"...", "user":{...}}
-
-# 3. Open the frontend
-open $FRONTEND
 ```
 
 ---
 
-## What's included in this repo
+## ⚙️ What's in the repo
 
-- [`railway.json`](railway.json) — Railway config (build + deploy settings)
-- [`backend/package.json`](backend/package.json) — `start` script for production
-- [`backend/src/config/index.js`](backend/src/config/index.js) — env vars mapped to config
-
----
-
-## Cost breakdown
-
-| Service      | Plan    | Cost     |
-|--------------|---------|----------|
-| Backend      | Railway Hobby | ~$5/mo credits (free for low traffic) |
-| PostgreSQL   | Railway Hobby | Included in credits |
-| Frontend     | Vercel Hobby  | $0       |
-| Redis        | Upstash Free  | $0       |
-| **Total**    |         | **$0-5/mo** |
-
-Railway's Hobby plan gives $5/mo in free usage credits. The Quintern backend
-running 24/7 uses about $3-4/mo of credits, so you stay within the free budget.
+| File | Purpose |
+|------|---------|
+| `railway.json` | Build + deploy config (Nixpacks, healthcheck) |
+| `backend/` | Fastify API — all routes, middleware, DB logic |
+| `backend/.env.example` | All env vars documented |
+| `backend/src/db/migrate.js` | SQL migration runner |
+| `backend/seeds/seed.js` | Admin + demo data seeder |
 
 ---
 
-## Going beyond free
+## 🔊 Reminder
 
-| Need                    | Upgrade                        | Cost      |
-|-------------------------|--------------------------------|-----------|
-| More backend resources  | Railway Developer ($10/mo)     | $10/mo    |
-| No credit monitoring    | Railway Team ($20/mo)          | $20/mo    |
-| Custom domain + SSL     | Included in all plans          | $0        |
-| PostgreSQL backups      | Included with Postgres plugin  | $0        |
+The **frontend** (`quintern-frontend`) deploys separately on **Vercel**. Once it's live, set `CORS_ORIGIN` here to your Vercel URL, and set `VITE_API_BASE` there to this Railway URL.
+
+---
+
+## 💰 Cost
+
+| Item | Cost |
+|------|------|
+| Backend (Railway Hobby) | ~$3-4/mo in usage (covered by $5 free credits) |
+| PostgreSQL (Railway) | Included in credits |
+| **Total** | **$0-1/mo** |
