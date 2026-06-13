@@ -25,19 +25,11 @@ function validateEnv() {
     return;
   }
 
-  // ── TEST / DEV DEFAULTS ──────────────────────────────────────────
-  // Hardcoded so Railway/Vercel deploys work without env vars.
-  // User said: "I will fix later." Remove these once real secrets are set.
+  // ── TEST / DEV DEFAULTS (from data.js) ──────────────────────────
+  // FIXME: Remove data.js + this block before production.
   if (!process.env.JWT_SECRET) {
-    process.env.JWT_SECRET = 'vTi5021OI4Z2CCrysqvEZBP3I13iHC07cdAjPm/7t/lJK1K0MV2I5UZ8Z1To8krr';
-    process.env.JWT_ACCESS_SECRET = 'MeTHklxqdSn276J8u72vdCE0f3cv1XsHxCXCVYwvRmRkvPLCh3OCMKNtBcxC+Ykv';
-    process.env.JWT_REFRESH_SECRET = 'ECpYAC9I0nYWQGimfeoIEi8XJXbwI4Tai72MAVDuvE5x3SCx4+CgS1cLnZe4hvNY';
-    process.env.CSRF_SECRET = 'ij1YQpheaBKzqjT3tAxKeylBv7FNLVuLxZdLa/5dbH+FXxJUwCzsZZdJA1+/hRvl';
-    process.env.API_KEY = 'MeTHklxqdSn276J8u72vdCE0f3cv1XsHxCXCVYwvRmRkvPLCh3OCMKNtBcxC+Ykv';
-    process.env.UPSTASH_REDIS_REST_URL = 'https://measured-dory-122478.upstash.io';
-    process.env.UPSTASH_REDIS_REST_TOKEN = 'gQAAAAAAAd5uAAIgcDEwN2Q1Y2RlNjJmYTI0ZWIxOWI5ZGQ3MjU0NTdmZTY4Ng';
-    process.env.GROQ_API_KEY = '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';
-    process.env.DATABASE_URL = process.env.DATABASE_URL || 'postgresql://neondb_owner:npg_fwnoY7Tr1Hzs@ep-empty-wave-at24pjtz-pooler.c-9.us-east-1.aws.neon.tech/neondb?sslmode=require';
+    const { applyDefaults } = require('./data');
+    applyDefaults(process.env);
   }
 
   const isProd = process.env.NODE_ENV === 'production';
