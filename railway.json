@@ -10,6 +10,7 @@
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 3,
     "healthcheckPath": "/health",
-    "healthcheckTimeout": 10
+    "healthcheckTimeout": 10,
+    "startCommand": "node src/app.js"
   }
 }
