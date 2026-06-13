@@ -198,8 +198,8 @@ jobs:
           echo "== /health =="
           curl -fsS http://localhost:5000/health
           echo
-          echo "== /health/ready =="
-          curl -fsS http://localhost:5000/health/ready
+          echo "== /api/ready =="
+          curl -fsS http://localhost:5000/api/ready
           echo
           echo "== POST /api/auth/login (admin) =="
           RESP=$(curl -fsS -H 'Content-Type: application/json' \
