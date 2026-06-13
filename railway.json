@@ -11,6 +11,6 @@
     "restartPolicyMaxRetries": 3,
     "healthcheckPath": "/health",
     "healthcheckTimeout": 10,
-    "startCommand": "node src/app.js"
+    "startCommand": "cross-env NODE_ENV=production node src/app.js"
   }
 }
